@@ -1,0 +1,3 @@
+[submodule "kubespray"]
+	path = kubespray
+	url = ssh://git@stash.billing.ru:2222/rndqc/kubespray.git

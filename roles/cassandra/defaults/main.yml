@@ -1,0 +1,23 @@
+---
+applications_dir: "/data/ces"
+distribs_dir: "/tmp/"
+
+cassandra_version: "3.11.4"
+cassandra_install_dir: "{{ applications_dir }}"
+path_to_cassandra_distrib: "apache-cassandra-{{ cassandra_version }}-bin.tar.gz"
+max_heap_size: 1G
+cluster_name: CES
+datacenter: dc1
+rack: rack1
+seeds: "{{ groups['cassandra'] | map('extract', hostvars, ['ansible_host']) | join(',') }}"
+data_dir: "{{ applications_dir }}/apache-cassandra-{{ cassandra_version }}/data"
+commitlog_dir: "{{ applications_dir }}/apache-cassandra-{{ cassandra_version }}/data/commitlog"
+saved_caches_dir: "{{ applications_dir }}/apache-cassandra-{{ cassandra_version }}/data/saved_caches"
+gc_log_dir: "{{ applications_dir }}/apache-cassandra-{{ cassandra_version }}/logs"
+concurrent_reads: 32
+concurrent_writes: 32
+read_request_timeout_in_ms: 5000
+write_request_timeout_in_ms: 2000
+request_timeout_in_ms: 10000
+memtable_flush_writers: 1
+disk_optimization_strategy: spinning

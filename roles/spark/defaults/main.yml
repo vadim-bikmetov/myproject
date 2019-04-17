@@ -1,0 +1,9 @@
+---
+applications_dir: "/data/spark"
+distribs_dir: "/data/tmp/"
+
+spark_version: 2.2.3
+path_to_spark_distrib: "spark-{{ spark_version }}-bin-hadoop2.7.tgz"
+spark_master_host: "{{ hostvars[groups['spark'][0]]['ansible_fqdn'] }}"
+spark_master_webui_port: 18080
+spark_worker_webui_port: 18081

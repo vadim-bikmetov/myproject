@@ -1,0 +1,51 @@
+---
+- name: Install required software to app host
+  yum: name={{item}} state=present
+  loop:
+    - ansible
+    - python-pip
+    - java-1.8.0-openjdk.x86_64
+    - unzip
+  become: true
+  become_method: sudo
+
+- name: Make distribs_dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - "{{ distribs_dir }}"
+    - "{{ applications_dir }}"
+
+- name: Download Spark from artifactory
+  get_url:
+    url: "https://artifactory.billing.ru/artifactory/rpm-bssbox-dev-local/ces/spark-{{ spark_version }}-bin-hadoop2.7.tgz"
+    url_username: rnd_qc_user1
+    url_password: ********
+    force_basic_auth: yes
+    dest: "{{ distribs_dir }}"
+    mode: 0644
+
+- unarchive:
+    src: "{{ distribs_dir }}{{ path_to_spark_distrib }}"
+    dest: "{{ applications_dir }}"
+    remote_src: yes
+
+- name: Configure spark-env.sh
+  template:
+    src: spark-env.j2
+    dest: "{{ applications_dir }}/spark-{{ spark_version }}-bin-hadoop2.7/conf/spark-env.sh"
+
+- name: Start Spark Master
+  shell: "./start-master.sh"
+  args:
+    chdir: "{{ applications_dir }}/spark-{{ spark_version }}-bin-hadoop2.7/sbin"
+  become: yes
+  run_once: true
+
+- name: Start Spark Slave
+  shell: "./start-slave.sh spark://{{ spark_master_host }}:7077"
+  args:
+    chdir: "{{ applications_dir }}/spark-{{ spark_version }}-bin-hadoop2.7/sbin"
+  become: yes

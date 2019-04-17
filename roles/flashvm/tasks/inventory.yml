@@ -1,0 +1,14 @@
+---
+- name: Copy inventory files from sample
+  copy:
+    src: "{{playbook_dir}}/kubespray/inventory/sample"
+    dest: "{{playbook_dir}}/inventory/cluster-dev"
+
+- name: Set k8s_hosts
+  set_fact:
+    k8s_hosts: "{% for h in groups['master'] %}{{ h }} {% endfor %}{% for h in groups['node'] %}{{ h }}{% if not loop.last %} {% endif %}{% endfor %}"
+
+- name: Create hosts.ini file
+  template:
+    src: hosts.ini
+    dest: "{{playbook_dir}}/inventory/cluster-dev/hosts.ini"

@@ -1,0 +1,55 @@
+# настроили пользователю ssh
+---
+- name: create .ssh directory
+  file:
+    path: '~/.ssh'
+    state: directory
+    mode: '0700'
+
+- name: ensure known hosts
+  command: bash -c 'touch ~/.ssh/known_hosts'
+
+- name: set permissions for known hosts
+  file:
+    path: '~/.ssh/known_hosts'
+    state: file
+    mode: '0600'
+
+- name: remove stash.billing.ru from known host
+  command: bash -c 'ssh-keygen -R stash.billing.ru'
+
+- name: ensure stash.billing.ru in known host
+  command: bash -c 'ssh-keyscan -H stash.billing.ru >> ~/.ssh/known_hosts'
+
+- name: remove ssh-configuration file
+  file:
+    path: '~/.ssh/config'
+    state: 'absent'
+
+- name: add ssh-configuration file
+  lineinfile:
+    dest: '~/.ssh/config'
+    line: '{{ item }}'
+    create: 'true'
+    state: 'present'
+    mode: '0600'
+    insertbefore: 'EOF'
+  with_items:
+    - 'Host *'
+    - '    StrictHostKeyChecking no'
+    - '    UserKnownHostsFile /dev/null'
+
+- name: find pubkeys at '{{ stand_setup_user_pubkeys_path }}'
+  local_action:
+    module: find
+    paths: '{{ stand_setup_user_pubkeys_path }}'
+    patterns: "*.pub"
+  register: pubkeys
+  become: no
+
+- name: add pubkeys
+  authorized_key:
+    user: '{{ user_username }}'
+    key: '{{ lookup("file", "{{ item.path }}") }}'
+  with_items:
+    - '{{ pubkeys.files }}'

@@ -1,0 +1,44 @@
+---
+cloudforms_username: '{{ order_username }}'
+cloudforms_password: '{{ order_password }}'
+resource_pool: vp_rnd
+cloudforms_service_name: 'Integration-{{ orderby }}-{{ service_description }}'
+cloudforms_service_description: 'Service:{{ orderby }}'
+cloudforms_resources:
+  - custom_role: master
+    service_template: 'Generic Instance'
+    vm_description: '{{ orderby }}'
+    src_vm_id: "rhel-server-7-x86_64-kvm"
+    instance_type: "t1.medium"
+    volume_size:            10
+    param_mountpoint:       '/srv'
+    number_of_vms: 3
+    retirement: '{{ expire }}'
+  - custom_role: node
+    service_template: 'Generic Instance'
+    vm_description: '{{ orderby }}'
+    src_vm_id: "rhel-server-7-x86_64-kvm"
+    volume_size:            10
+    param_mountpoint:       '/srv'
+    instance_type: "t1.medium"
+    number_of_vms: 3
+    retirement: '{{ expire }}'
+  #- custom_role: orawin
+  #  service_template: 'Oracle Instance'
+  #  vm_description: '{{ orderby }}'
+  #  param_oracle_charset: CL8MSWIN1251
+  #  instance_type: 'o1.medium'
+  #  retirement: '{{ expire }}'
+  #- custom_role: orautf
+  #  service_template: 'Oracle Instance'
+  #  vm_description: '{{ orderby }}'
+  #  param_oracle_charset: AL32UTF8
+  #  instance_type: 'o1.medium'
+  #  retirement: '{{ expire }}'
+  #- custom_role: ceph
+  #  service_template: 'Generic Instance'
+  #  vm_description: '{{ orderby }}'
+  #  src_vm_id: "rhel-server-7-x86_64-kvm"
+  #  instance_type: "t1.tiny"
+  #  number_of_vms: '1'
+  #  retirement: '{{ expire }}'

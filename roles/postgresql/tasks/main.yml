@@ -1,0 +1,24 @@
+---
+- name: postgresql rpm
+  yum:
+    name: "{{ repo_rpm }}"
+    state: present
+
+- name: install client postgresql
+  yum:
+    name: "postgresql{{ version|replace('.','') }}"
+    state: present
+
+- name: install server postgresql
+  yum:
+    name: "postgresql{{ version|replace('.','') }}-server"
+    state: present
+
+- name: Initialize database
+  command: "/usr/pgsql-{{ version }}/bin/postgresql{{ version|replace('.','') }}-setup initdb"
+
+- name: start postgresql
+  service:
+    name: "postgresql-{{ version }}.service"
+    state: started
+    enabled: yes

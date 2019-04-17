@@ -1,0 +1,10 @@
+- name: Include kubespray tasks
+  include: kubespray/cluster.yml
+
+- name: Create service account for dashboard access
+  hosts: node1
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - role: tune_cluster
+      stand_setup_action: 'dashboard_access'

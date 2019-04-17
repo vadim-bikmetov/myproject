@@ -1,0 +1,87 @@
+---
+- name: Install required software to app host
+  yum: name={{item}} state=present
+  with_items:
+        - ansible
+        - python-pip
+        - java-1.8.0-openjdk.x86_64
+        - unzip
+  become: true
+  become_method: sudo
+
+- name: Create app directory
+  file:
+        path: "{{ cassandra_install_dir }}"
+        state: directory
+        mode: 0755
+
+- name: Create group CES
+  group:
+        name: ces
+  become: yes
+  become_method: sudo
+
+- name: Create user for stand
+  user:
+        name: ces
+        comment: ces
+        groups: "wheel,ces"
+        password: "/DQtd44eqPS.I"
+        home: "{{ cassandra_install_dir }}"
+        append: yes
+  become: yes
+  become_method: sudo
+
+- name: Download Cassandra from artifactory
+  get_url:
+        url: "https://artifactory.billing.ru/artifactory/rpm-bssbox-dev-local/ces/apache-cassandra-{{ cassandra_version }}-bin.tar.gz"
+        url_username: rnd_qc_user1
+        url_password: ********
+        force_basic_auth: yes
+        dest: "{{distribs_dir}}"
+        mode: 0644
+
+- unarchive:
+        src: "{{ distribs_dir }}{{ path_to_cassandra_distrib }}"
+        dest: "{{ cassandra_install_dir }}"
+        remote_src: yes
+
+- name: Configure cassandra.yaml
+  template:
+        src: cassandra.j2
+        dest: "{{ cassandra_install_dir }}/apache-cassandra-{{ cassandra_version }}/conf/cassandra.yaml"
+
+- name: Configure cassandra-env.sh
+  template:
+        src: cassandra-env.sh
+        dest: "{{ cassandra_install_dir }}/apache-cassandra-{{ cassandra_version }}/conf/cassandra-env.sh"
+
+- name: Configure cassandra-rackdc.properties
+  template:
+        src: cassandra-rackdc.properties
+        dest: "{{ cassandra_install_dir }}/apache-cassandra-{{ cassandra_version }}/conf/cassandra-rackdc.properties"
+
+- name: Configure jvm.options
+  template:
+        src: jvm.options
+        dest: "{{ cassandra_install_dir }}/apache-cassandra-{{ cassandra_version }}/conf/jvm.options"
+
+- name: Chown app directory
+  file:
+        path: "{{ cassandra_install_dir }}"
+        owner: ces
+        group: ces
+        mode: 0755
+        recurse: yes
+
+- name: Start Cassandra
+  command: "nohup ./cassandra"
+  args:
+        chdir: "{{ cassandra_install_dir }}/apache-cassandra-{{ cassandra_version }}/bin"
+  become: yes
+  become_user: ces
+
+- name: Assure that port is opened
+  wait_for:
+        port: 9042
+        delay: 30

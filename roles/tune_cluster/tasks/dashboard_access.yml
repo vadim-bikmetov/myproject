@@ -1,0 +1,8 @@
+---
+- name: Copy dasboard_sa.yaml to node1
+  copy:
+    src: dashboard_sa.yaml
+    dest: /etc/kubernetes
+
+- name: Create service account to access dashboard
+  shell: /usr/local/bin/kubectl create -f /etc/kubernetes/dashboard_sa.yaml

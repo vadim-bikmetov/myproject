@@ -1,0 +1,61 @@
+---
+- name: Add ps_oracle-dev repository
+  yum_repository:
+    state: present
+    name: ps_oracle-dev
+    description: Peter-Service Oracle Dev packages 7 - $basearch
+    file: ps_oracle-dev
+    baseurl: http://repo.net.billing.ru/packages/oracle-dev/7
+    gpgcheck: no
+    repo_gpgcheck: no
+
+- name: Install Oracle 12.2.0.1
+  include_role:
+    name: oracle-database
+  vars:
+    oracle_major_version: '12'
+    oracle_minor_version: '2.0.1'
+    oracle_charset: "{{ ora_db_charset }}"
+
+- name: install unzip
+  yum:
+    name: unzip
+    state: present
+
+- name: Create tnsnames.ora
+  template:
+    src: tnsnames.j2
+    dest: /u01/app/oracle/product/db/12.2.0.1/network/admin/tnsnames.ora
+    owner: oracle
+    group: oinstall
+    mode: 0644
+
+- name: Download Oracle patch 27015449 from artifactory
+  get_url:
+    url: "https://artifactory.billing.ru/artifactory/rpm-bssbox-qa-local/non-rpm/oracle/p27015449_122010_Linux-x86-64.zip"
+    url_username: rnd_qc_user1
+    url_password: ********
+    force_basic_auth: yes
+    dest: /tmp
+    mode: 0644
+
+- name: Unzip patch archive
+  unarchive:
+    src: /tmp/p27015449_122010_Linux-x86-64.zip
+    dest: /home/oracle
+    remote_src: yes
+  become: yes
+  become_user: oracle
+
+- name: Install oracle patch 27015449
+  shell: yes | /u01/app/oracle/product/db/12.2.0.1/OPatch/opatch apply
+  args:
+    chdir: /home/oracle/27015449
+  become: yes
+  become_user: oracle
+
+- name: Restart Oracle DB
+  systemd:
+    name: oracle-rdbms-12
+    state: restarted
+    daemon_reload: yes

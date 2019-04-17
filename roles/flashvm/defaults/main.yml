@@ -1,0 +1,2 @@
+---
+stand_setup_user_pubkeys_path: '{{ role_path }}/files/pubkeys'

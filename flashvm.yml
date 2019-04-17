@@ -1,0 +1,40 @@
+- name: Request Cloud Infra
+  hosts: localhost
+  any_errors_fatal: true
+  vars_files:
+    - "{{ vars }}"
+  roles:
+    - role: ansible-cloudforms-role
+#
+#    - role: basic_roles
+#      stand_setup_action: 'generate_hosts'
+#      when: platform_name != "flashvm" # workaround because variable "services" is not available
+
+- name: Wait for SSH access to machines
+  hosts: all
+  become: no
+  gather_facts: no
+  tasks:
+    - wait_for: port=22 host="{{ ansible_host|default(ansible_ssh_host|default(inventory_hostname)) }}" search_regex=OpenSSH
+  connection: local
+
+- name: Sleep 10 seconds to workaround SSH issues
+  hosts: localhost
+  tasks:
+    - pause: seconds=10
+
+- name: Configure VMs
+  hosts: all
+  become: yes
+  any_errors_fatal: true
+  roles:
+    - role: flashvm
+      stand_setup_action: 'user-ssh'
+
+- name: Create inventory for kubespray
+  hosts: localhost
+  become: no
+  any_errors_fatal: true
+  roles:
+    - role: flashvm
+      stand_setup_action: 'inventory'

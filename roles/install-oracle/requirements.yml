@@ -1,0 +1,4 @@
+---
+- src: git+https://stash.billing.ru/scm/sag/ansible_oracle_database.git
+  version: master
+  name: oracle-database

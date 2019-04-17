@@ -1,0 +1,2 @@
+---
+- include: '{{ stand_setup_action }}.yml'

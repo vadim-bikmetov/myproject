@@ -1,0 +1,4 @@
+---
+- src: git+https://stash.billing.ru/scm/ansible-roles/ansible-compatibility-role.git
+  version: master
+  name: ansible-cloudforms-role
